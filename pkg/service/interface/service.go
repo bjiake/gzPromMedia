@@ -13,7 +13,7 @@ type ServiceUseCase interface {
 	Login(ctx context.Context, acc account.Login) (int64, error)
 	PutAccount(ctx context.Context, id string, updateAcc *account.Account) (*account.Info, error)
 	GetAccount(ctx context.Context, id string) (*account.Account, error)
-	DeleteAccount(ctx context.Context, id string) error
+	DeleteAccount(ctx context.Context, id string, currId string) error
 	Subscribe(ctx context.Context, id string, idSub string) error
 	UnSubscribe(ctx context.Context, id string, idSub string) error
 }

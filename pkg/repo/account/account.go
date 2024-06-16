@@ -9,6 +9,7 @@ import (
 	"errors"
 	"github.com/lib/pq"
 	"log"
+	"time"
 
 	"github.com/jackc/pgconn"
 )
@@ -55,11 +56,12 @@ func (r *accountDataBase) Registration(ctx context.Context, newAccount account.R
 	if existingCount > 0 {
 		return nil, db.ErrDuplicate
 	}
+	birthDateStr := newAccount.BirthDate.Format("2006-01-02")
 
 	var id int64
 	err = r.db.QueryRowContext(ctx,
 		"INSERT INTO account(firstName, lastName, email, password, birthDate, subscribersIds) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
-		newAccount.FirstName, newAccount.LastName, newAccount.Email, newAccount.Password, newAccount.BirthDate, pq.Array([]int64{})).Scan(&id)
+		newAccount.FirstName, newAccount.LastName, newAccount.Email, newAccount.Password, birthDateStr, pq.Array([]int64{})).Scan(&id)
 	if err != nil {
 		var pgxError *pgconn.PgError
 		if errors.As(err, &pgxError) {
@@ -96,8 +98,9 @@ func (r *accountDataBase) Login(ctx context.Context, acc account.Login) (int64, 
 }
 
 func (r *accountDataBase) Put(ctx context.Context, id int64, updateAcc *account.Account) (*account.Info, error) {
+	birthDateStr := updateAcc.BirthDate.Format("02.01.2006")
 	res, err := r.db.ExecContext(ctx, "UPDATE account SET firstName = $1, lastName = $2, email = $3, password = $4, birthDate = $5, subscribersIds = $6 WHERE id = $7",
-		updateAcc.FirstName, updateAcc.LastName, updateAcc.Email, updateAcc.Password, updateAcc.BirthDate, pq.Array(updateAcc.SubscribersIds), id)
+		updateAcc.FirstName, updateAcc.LastName, updateAcc.Email, updateAcc.Password, birthDateStr, pq.Array(updateAcc.SubscribersIds), id)
 	if err != nil {
 		var pgxError *pgconn.PgError
 		if errors.As(err, &pgxError) {
@@ -116,6 +119,11 @@ func (r *accountDataBase) Put(ctx context.Context, id int64, updateAcc *account.
 		BirthDate:   updateAcc.BirthDate,
 		Subscribers: updateAcc.SubscribersIds,
 	}
+	birthDate, err := time.Parse("02.01.2006", birthDateStr)
+	if err != nil {
+		return nil, err
+	}
+	result.BirthDate = birthDate
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {

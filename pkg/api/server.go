@@ -18,7 +18,7 @@ func NewServerHTTP(userHandler *handler.Handler) *ServerHTTP {
 
 	// Configure CORS
 	corsConfig := cors.Config{
-		AllowOrigins:     []string{"http://172.20.196.70:3000"},
+		AllowOrigins:     []string{"http://127.0.0.1:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Content-Type", "Authorization"},
 		AllowCredentials: true,
@@ -35,13 +35,13 @@ func NewServerHTTP(userHandler *handler.Handler) *ServerHTTP {
 	engine.PUT("/account/:accountId", userHandler.PutAccount)
 	engine.GET("/account/:accountId", userHandler.GetAccount)
 	engine.DELETE("/account/:accountId", userHandler.DeleteAccount)
-	engine.PUT("/subscribe:/accountId", userHandler.Subscribe)
-	engine.PUT("/unSubscribe:/accountId", userHandler.UnSubscribe)
+	engine.PUT("/subscribe/:accountId", userHandler.Subscribe)
+	engine.PUT("/unSubscribe/:accountId", userHandler.UnSubscribe)
 	engine.GET("/isBirthday", userHandler.CheckBirthDay)
 
 	return &ServerHTTP{engine: engine}
 }
 
 func (sh *ServerHTTP) Start() {
-	sh.engine.Run("127.0.0.1:8001")
+	sh.engine.Run(":8001")
 }

@@ -193,7 +193,17 @@ func (h *Handler) GetAccount(c *gin.Context) {
 
 func (h *Handler) DeleteAccount(c *gin.Context) {
 	id := c.Param("accountId")
-	err := h.service.DeleteAccount(c.Request.Context(), id)
+	currId, isExist := c.Get("userId")
+	if isExist == false {
+		c.JSON(401, "Cannot find your account on token")
+		return
+	}
+	currIdStr, ok := currId.(string)
+	if !ok {
+		c.JSON(400, "Invalid user ID format")
+		return
+	}
+	err := h.service.DeleteAccount(c.Request.Context(), id, currIdStr)
 	if err != nil {
 		switch err.Error() {
 		case db.ErrParamNotFound.Error():

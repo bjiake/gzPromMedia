@@ -1,6 +1,7 @@
 package account
 
 import (
+	"encoding/json"
 	"sync"
 	"time"
 )
@@ -12,7 +13,7 @@ type Account struct {
 	BirthDate      time.Time `json:"birthDate" validate:"required" `
 	Email          string    `json:"email" validate:"required" `
 	Password       string    `json:"password" validate:"required" `
-	SubscribersIds []int64   `json:"subscribers"`
+	SubscribersIds []int64   `json:"subscribersIds"`
 	mut            sync.RWMutex
 }
 
@@ -67,4 +68,27 @@ type Registration struct {
 	BirthDate time.Time `json:"birthDate" validate:"required" `
 	Email     string    `json:"email" validate:"required" `
 	Password  string    `json:"password" validate:"required" `
+}
+
+func (r *Registration) UnmarshalJSON(b []byte) error {
+	var aux struct {
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+		Email     string `json:"email"`
+		BirthDate string `json:"birthData"`
+		Password  string `json:"password"`
+	}
+	err := json.Unmarshal(b, &aux)
+	if err != nil {
+		return err
+	}
+	r.FirstName = aux.FirstName
+	r.LastName = aux.LastName
+	r.Email = aux.Email
+	r.BirthDate, err = time.Parse("2006-02-01", aux.BirthDate)
+	if err != nil {
+		return err
+	}
+	r.Password = aux.Password
+	return nil
 }

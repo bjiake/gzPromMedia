@@ -124,10 +124,13 @@ func (s *service) GetAccount(ctx context.Context, id string) (*account.Account, 
 	return result, nil
 }
 
-func (s *service) DeleteAccount(ctx context.Context, id string) error {
+func (s *service) DeleteAccount(ctx context.Context, id string, currId string) error {
 	idInt, err := s.checkIdParam(id)
 	if err != nil {
 		return err
+	}
+	if id != currId {
+		return db.ErrValidate
 	}
 
 	err = s.rAccount.Delete(ctx, idInt)
